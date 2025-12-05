@@ -507,13 +507,27 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+// Dynamically choose storage based on environment
+import { DatabaseStorage } from "./db-storage";
+
+let storageInstance: IStorage;
+
+if (process.env.DATABASE_URL) {
+  console.log("Using PostgreSQL database storage");
+  storageInstance = new DatabaseStorage(process.env.DATABASE_URL);
+} else {
+  console.warn("DATABASE_URL not set - using in-memory storage (not persistent)");
+  storageInstance = new MemStorage();
+}
+
+export const storage = storageInstance;
 
 // Ensure database connection is initialized
 export async function ensureStorageInitialized() {
   try {
     // Test database connection with a simple query
     await storage.getAllReleases();
+    console.log("Storage connection verified");
   } catch (error) {
     console.error("Database connection failed:", error);
     throw new Error("Failed to connect to database");
