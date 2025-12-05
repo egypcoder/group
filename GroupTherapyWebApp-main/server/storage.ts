@@ -427,7 +427,7 @@ export class MemStorage implements IStorage {
       bio: nullify(artist.bio),
       imageUrl: nullify(artist.imageUrl),
       spotifyArtistId: nullify(artist.spotifyArtistId),
-      socialLinks: nullify(artist.socialLinks),
+      socialLinks: artist.socialLinks ?? null,
       featured: nullify(artist.featured),
       createdAt: new Date(),
     };
