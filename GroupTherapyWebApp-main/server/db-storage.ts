@@ -1,6 +1,6 @@
 
-import { drizzle } from "drizzle-orm/neon-http";
-import { neon } from "@neondatabase/serverless";
+import { drizzle } from "drizzle-orm/node-postgres";
+import { Pool } from "pg";
 import { eq } from "drizzle-orm";
 import type { IStorage } from "./storage";
 import type { User, InsertUser, AdminUser, InsertAdminUser, InsertLoginAttempt, LoginAttempt, Release, InsertRelease, Event, InsertEvent, Post, InsertPost, Contact, InsertContact, Artist, InsertArtist, RadioShow, InsertRadioShow, Playlist, InsertPlaylist, Video, InsertVideo } from "@shared/schema";
@@ -8,10 +8,16 @@ import * as schema from "@shared/schema";
 
 export class DatabaseStorage implements IStorage {
   private db;
+  private pool;
 
   constructor(databaseUrl: string) {
-    const sql = neon(databaseUrl);
-    this.db = drizzle(sql, { schema });
+    this.pool = new Pool({
+      connectionString: databaseUrl,
+      ssl: databaseUrl.includes('supabase') || databaseUrl.includes('neon') 
+        ? { rejectUnauthorized: false } 
+        : undefined
+    });
+    this.db = drizzle(this.pool, { schema });
   }
 
   // Users
